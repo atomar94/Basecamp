@@ -64,8 +64,12 @@ public class launchActivity extends Activity {
 
         // Check for bike
         boolean found = displayPairedDevices(c);
+        //execute IoT commands.
         if(found) {
-
+            ToggleButton button0 = (ToggleButton) rowAdapter.getItem(0);
+            ToggleButton button1 = (ToggleButton) rowAdapter.getItem(1);
+            ToggleButton button2 = (ToggleButton) rowAdapter.getItem(2);
+            ToggleButton button3 = (ToggleButton) rowAdapter.getItem(3);
         }
 
         discoveredItems = new ArrayList<String>(); //array holding all discovered items' names
