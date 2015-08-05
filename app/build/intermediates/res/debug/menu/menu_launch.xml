@@ -3,4 +3,4 @@
     <item android:id="@+id/action_settings" android:title="@string/action_settings"
         android:orderInCategory="100" android:showAsAction="never" />
 </menu>
-<!-- From: file:/C:/Users/alex/AndroidStudioProjects/Basecamp/app/src/main/res/menu/menu_launch.xml -->
+<!-- From: file:/Users/olivertownsend/Documents/Code/IdeaQuest/BaseCamp/Basecamp/app/src/main/res/menu/menu_launch.xml -->

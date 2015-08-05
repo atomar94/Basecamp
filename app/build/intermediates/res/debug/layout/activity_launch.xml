@@ -15,8 +15,8 @@
         <ListView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/pairedLV" />
+            android:id="@+id/appliances_listview" />
     </LinearLayout>
 
 </RelativeLayout>
-<!-- From: file:/C:/Users/alex/AndroidStudioProjects/Basecamp/app/src/main/res/layout/activity_launch.xml -->
+<!-- From: file:/Users/olivertownsend/Documents/Code/IdeaQuest/BaseCamp/Basecamp/app/src/main/res/layout/activity_launch.xml -->

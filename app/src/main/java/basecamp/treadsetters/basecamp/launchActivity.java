@@ -8,30 +8,20 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.ArrayAdapter;
-import android.widget.ListAdapter;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
 import android.widget.ListView;
-import android.widget.SimpleAdapter;
-import android.widget.Toast;
+import android.widget.TextView;
+import android.widget.ToggleButton;
 
-import com.gimbal.android.Communication;
-import com.gimbal.android.CommunicationListener;
-import com.gimbal.android.GimbalDebugger;
-import com.gimbal.android.Place;
-import com.gimbal.android.CommunicationManager;
-import com.gimbal.android.Gimbal;
-import com.gimbal.android.Push;
-import com.gimbal.android.Visit;
-import com.gimbal.android.BeaconManager;
 import com.gimbal.android.BeaconEventListener;
-import com.gimbal.android.BeaconSighting;
+import com.gimbal.android.CommunicationListener;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Set;
 
 public class launchActivity extends Activity {
@@ -44,6 +34,7 @@ public class launchActivity extends Activity {
     private BluetoothAdapter bta;
     final int REQUEST_ENABLE_BT = 10; //random number needed for bt enable callback verification
     ArrayList<String> discoveredItems;
+    ListView listview;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,7 +49,25 @@ public class launchActivity extends Activity {
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
         }
-        displayPairedDevices();
+
+        Context c = getApplicationContext();
+
+
+        listview = (ListView) findViewById(R.id.appliances_listview);
+        MyRowAdapter rowAdapter = new MyRowAdapter(this,
+                new String[] { "Garage Door", "Coffee","Air Conditioning", "Tiger Cage" },
+                new String[] { "Open", "On", "On", "Open" },
+                new String[] { "Closed", "Off", "Off", "Closed" });
+        listview.setAdapter(rowAdapter);
+        rowAdapter.notifyDataSetChanged();
+
+
+        // Check for bike
+        boolean found = displayPairedDevices(c);
+        if(found) {
+
+        }
+
         discoveredItems = new ArrayList<String>(); //array holding all discovered items' names
         discoveredItems.add("Discovered item test");
         //bta.startDiscovery();
@@ -72,38 +81,24 @@ public class launchActivity extends Activity {
             if(BluetoothDevice.ACTION_FOUND.equals(action)) {
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 discoveredItems.add(device.getName());
-                ListView discoveredLV = (ListView) findViewById(R.id.discoveredLV);
-                ListAdapter adapter = new ArrayAdapter(getApplication(), android.R.layout.simple_list_item_1, discoveredItems);
-                discoveredLV.setAdapter(adapter);
             }
         }
     };
 
-    void displayPairedDevices() {
-        Set<BluetoothDevice> btDevices = bta.getBondedDevices();
-        /*
-        if(btDevices.size() > 0) {
-            Log.v("Basecamp log", "found " + btDevices.size() + " paired devices");
-            ArrayList<String> Items = new ArrayList<String>();
 
-            //populate list that will be displayed
-            for(BluetoothDevice device : btDevices) {
-                Items.add(device.getName());
-            }
-            Items.add("TEST_INDEX_0");
-            Items.add("TEST_INDEX_1");
-            Items.add("TEST_INDEX_2");
-            //our launcher list view
-            ListView pairedLV = (ListView) findViewById(R.id.pairedLV);
-            ListAdapter adapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, Items);
-            pairedLV.setAdapter(adapter);
-        }
-        */
-        for(BluetoothDevice device : btDevices) {
-            if(device.getName().equals("otownsend92")) {
-                Toast.makeText(getApplicationContext(), "Found bike, opening garage door!",Toast.LENGTH_LONG);
+    public boolean displayPairedDevices(Context c) {
+        Set<BluetoothDevice> btDevices = bta.getBondedDevices();
+
+        Log.d("MYTAG", "Searching for devices");
+        for (BluetoothDevice device : btDevices) {
+            Log.d("MYTAG", "Found: " + device.getName());
+            if (device.getName().equals("otownsend92")) {
+                Log.d("MYTAG", "Found Bike!");
+                //Toast.makeText(c, "Found bike, opening garage door!",Toast.LENGTH_LONG);
+                return true;
             }
         }
+        return false;
     }
 
 
@@ -135,5 +130,59 @@ public class launchActivity extends Activity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+}
+
+/*
+ Row adapter class.
+ */
+class MyRowAdapter extends BaseAdapter {
+
+    Context context;
+    String[] data;
+    String[] buttonOnData;
+    String[] buttonOffData;
+    private static LayoutInflater inflater = null;
+
+    public MyRowAdapter(Context context, String[] data, String[] buttonOnData, String[] buttonOffData) {
+        // TODO Auto-generated constructor stub
+        this.context = context;
+        this.data = data;
+        this.buttonOffData = buttonOffData;
+        this.buttonOnData = buttonOnData;
+        inflater = (LayoutInflater) context
+                .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+    }
+
+    @Override
+    public int getCount() {
+        // TODO Auto-generated method stub
+        return data.length;
+    }
+
+    @Override
+    public Object getItem(int position) {
+        // TODO Auto-generated method stub
+        return data[position];
+    }
+
+    @Override
+    public long getItemId(int position) {
+        // TODO Auto-generated method stub
+        return position;
+    }
+
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent) {
+        // TODO Auto-generated method stub
+        View vi = convertView;
+        if (vi == null)
+            vi = inflater.inflate(R.layout.garage_door_row, null);
+        TextView row_text = (TextView) vi.findViewById(R.id.row_text);
+        row_text.setText(data[position]);
+        ToggleButton toggle = (ToggleButton) vi.findViewById(R.id.row_button);
+        toggle.setTextOn(buttonOnData[position]);
+        toggle.setTextOff(buttonOffData[position]);
+        return vi;
     }
 }
