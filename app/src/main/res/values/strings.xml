@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Basecamp</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="radiobutton1">Garage Door</string>
+    <string name="radiobutton2">Coffee Machine</string>
+    <string name="radiobutton3">Air Conditioning</string>
+    <string name="radiobutton4">Tiger Cage</string>
+</resources>
