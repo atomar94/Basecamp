@@ -13,6 +13,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -22,7 +23,10 @@ import com.gimbal.android.BeaconEventListener;
 import com.gimbal.android.CommunicationListener;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class launchActivity extends Activity {
 
@@ -35,6 +39,8 @@ public class launchActivity extends Activity {
     final int REQUEST_ENABLE_BT = 10; //random number needed for bt enable callback verification
     ArrayList<String> discoveredItems;
     ListView listview;
+    MyRowAdapter rowAdapter;
+    private Timer myTimer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,45 +56,65 @@ public class launchActivity extends Activity {
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
         }
 
-        Context c = getApplicationContext();
-
 
         listview = (ListView) findViewById(R.id.appliances_listview);
-        MyRowAdapter rowAdapter = new MyRowAdapter(this,
+        rowAdapter = new MyRowAdapter(this,
                 new String[] { "Garage Door", "Coffee","Air Conditioning", "Tiger Cage" },
                 new String[] { "Open", "On", "On", "Open" },
                 new String[] { "Closed", "Off", "Off", "Closed" });
         listview.setAdapter(rowAdapter);
         rowAdapter.notifyDataSetChanged();
 
-
-        // Check for bike
-        boolean found = displayPairedDevices(c);
-        //execute IoT commands.
-        if(found) {
-            ToggleButton button0 = (ToggleButton) rowAdapter.getItem(0);
-            ToggleButton button1 = (ToggleButton) rowAdapter.getItem(1);
-            ToggleButton button2 = (ToggleButton) rowAdapter.getItem(2);
-            ToggleButton button3 = (ToggleButton) rowAdapter.getItem(3);
-        }
-
+        bta.startDiscovery();
+        Log.v("Basecamp Log", "discovery started");
         discoveredItems = new ArrayList<String>(); //array holding all discovered items' names
         discoveredItems.add("Discovered item test");
-        //bta.startDiscovery();
+
+        // every 5 seconds this will search for any paired devices nearby.
+        myTimer = new Timer();
+        myTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                // Check for bike
+                boolean found;
+                Context c = getApplicationContext();
+                //ListView myLv = (ListView) findViewById(R.id.appliances_listview);
+                //View grow = (View) myLv.getAdapter().getView()
+                //ToggleButton buttonN = (ToggleButton) grow.findViewById(R.id.row_button);
+                ToggleButton button0 = (ToggleButton) rowAdapter.getView(0, null, null).findViewById(R.id.row_button);
+                ToggleButton button1 = (ToggleButton) rowAdapter.getView(1, null, null).findViewById(R.id.row_button);
+                ToggleButton button2 = (ToggleButton) rowAdapter.getView(2, null, null).findViewById(R.id.row_button);
+                ToggleButton button3 = (ToggleButton) rowAdapter.getView(3, null, null).findViewById(R.id.row_button);
+
+                found = displayPairedDevices(c);
+                //execute IoT commands.
+                if (found) {
+                    button0.setChecked(true);
+                    button1.setChecked(true);
+                    button2.setChecked(true);
+                    button3.setChecked(true);
+                }
+                else {
+                    button0.setChecked(false);
+                    button1.setChecked(false);
+                    button2.setChecked(false);
+                    button3.setChecked(false);
+                }
+            }
+        }, 0, 5000);
     }
 
     private final BroadcastReceiver mReciever = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
-            Log.v("Basecamp Log", "Discovered paired device");
+            Log.v("Basecamp Log", "Discovered device");
             if(BluetoothDevice.ACTION_FOUND.equals(action)) {
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                discoveredItems.add(device.getName());
+                Log.v("Basecamp Log", "found device " + device.getName());
             }
         }
     };
-
 
     public boolean displayPairedDevices(Context c) {
         Set<BluetoothDevice> btDevices = bta.getBondedDevices();
